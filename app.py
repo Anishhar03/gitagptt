@@ -3,7 +3,6 @@ import os
 import base64
 from dotenv import load_dotenv
 from PIL import Image
-from streamlit_audio_recorder import audio_recorder
 
 # Google Gemini
 import google.generativeai as genai
@@ -11,7 +10,7 @@ import google.generativeai as genai
 # Utils
 from utils.loader import load_gita_text
 from utils.vector_store import create_faiss_index
-from utils.voice_io import audio_to_text, text_to_speech
+from utils.voice_io import text_to_speech
 from utils.translator import translate_text, language_codes
 from utils.gpt_prompt import build_prompt
 
@@ -22,8 +21,6 @@ genai.configure(api_key=GOOGLE_API_KEY)
 
 # --- Load and Process Gita --- #
 gita_text = load_gita_text("gita_book.pdf")
-
-# --- Create Vector Index --- #
 vectorstore = create_faiss_index(gita_text, GOOGLE_API_KEY)
 
 # --- Background Image --- #
@@ -58,20 +55,9 @@ language = st.selectbox("🌐 Select Language", list(language_codes.keys()))
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# --- Input Section --- #
-st.markdown("### 🎙️ Ask Krishna")
-audio_bytes = audio_recorder(text="Click to record 🎤", icon_size="2x")
-user_input = ""
-
-if audio_bytes:
-    try:
-        user_input = audio_to_text(audio_bytes)
-        st.success(f"🗣️ You said: {user_input}")
-    except:
-        st.warning("Could not recognize voice. Try again.")
-
-if not user_input:
-    user_input = st.text_input("🙏 Or type your question")
+# --- User Input --- #
+st.markdown("### 💬 Ask your question below")
+user_input = st.text_input("🙏 Type your question here")
 
 # --- Gemini Model --- #
 model = genai.GenerativeModel("gemini-1.5-flash")
@@ -90,24 +76,21 @@ if st.button("🕊️ Ask Krishna"):
             reply = generate_response(user_input)
             translated_reply = translate_text(reply, language)
 
-            # Add to session history
             st.session_state.chat_history.append({
                 "user": user_input,
                 "bot": translated_reply
             })
 
-            # Show reply
             st.markdown("### 🧘 Krishna says:")
             st.success(translated_reply)
 
-            # Play voice
             try:
                 audio_path = text_to_speech(translated_reply, language_codes[language])
                 st.audio(audio_path, format="audio/mp3")
             except:
                 st.warning("Could not generate Krishna's voice.")
     else:
-        st.warning("Please enter or speak a question.")
+        st.warning("Please enter a question.")
 
 # --- Chat History --- #
 if st.session_state.chat_history:
