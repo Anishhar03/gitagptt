@@ -1,10 +1,9 @@
 streamlit
 python-dotenv
 Pillow
+PyMuPDF
 google-generativeai
-faiss-cpu
 gtts
-PyPDF2
-langchain==0.0.350
-deep-translator
-pydantic==1.10.13
+googletrans==4.0.0-rc1
+langchain
+faiss-cpu
