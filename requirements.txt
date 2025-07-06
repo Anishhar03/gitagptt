@@ -7,3 +7,4 @@ gtts
 googletrans==4.0.0-rc1
 langchain
 faiss-cpu
+pydantic==1.10.13
