@@ -5,6 +5,6 @@ PyMuPDF
 google-generativeai
 gtts
 googletrans==4.0.0-rc1
-langchain
+langchain>=0.1.14
 faiss-cpu
 pydantic==1.10.13
