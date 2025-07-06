@@ -1,11 +1,10 @@
 streamlit
-google-generativeai
 python-dotenv
-PyPDF2
-langchain
+Pillow
+google-generativeai
 faiss-cpu
 gtts
-speechrecognition
-googletrans==4.0.0-rc1
-pillow
-streamlit-webrtc
+PyPDF2
+langchain==0.0.350
+deep-translator
+pydantic==1.10.13
