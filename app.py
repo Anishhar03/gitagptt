@@ -14,36 +14,49 @@ from utils.voice_io import text_to_speech
 from utils.translator import translate_text, language_codes
 from utils.gpt_prompt import build_prompt
 
-# --- Load Environment Variables --- #
-load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+# --- Load API Key from Streamlit Secrets or .env --- #
+GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY", None)
+if not GOOGLE_API_KEY:
+    load_dotenv()
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+if not GOOGLE_API_KEY:
+    st.error("🚨 Google API key not found. Please add it to .env or Streamlit secrets.")
+    st.stop()
+
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# --- Load and Process Gita --- #
-gita_text = load_gita_text("gita_book.pdf")
-vectorstore = create_faiss_index(gita_text, GOOGLE_API_KEY)
+# --- Cache and Load Gita Index --- #
+@st.cache_resource
+def load_index():
+    gita_text = load_gita_text("gita_book.pdf")
+    return create_faiss_index(gita_text, GOOGLE_API_KEY)
+
+vectorstore = load_index()
 
 # --- Background Image --- #
 def set_background(image_file):
-    with open(image_file, "rb") as img_file:
-        b64_encoded = base64.b64encode(img_file.read()).decode()
-    st.markdown(f"""
-        <style>
-        .stApp {{
-            background-image: linear-gradient(rgba(10,10,30,0.6), rgba(10,10,30,0.6)),
-                              url("data:image/jpg;base64,{b64_encoded}");
-            background-size: cover;
-            background-attachment: fixed;
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+    if os.path.exists(image_file):
+        with open(image_file, "rb") as img_file:
+            b64_encoded = base64.b64encode(img_file.read()).decode()
+        st.markdown(f"""
+            <style>
+            .stApp {{
+                background-image: linear-gradient(rgba(10,10,30,0.6), rgba(10,10,30,0.6)),
+                                  url("data:image/jpg;base64,{b64_encoded}");
+                background-size: cover;
+                background-attachment: fixed;
+            }}
+            </style>
+        """, unsafe_allow_html=True)
 
 set_background("krishna_ji.jpeg")
 
 # --- Title and Avatar --- #
 col1, col2 = st.columns([1, 4])
 with col1:
-    st.image("krishna_avatar.jpeg", width=80)
+    if os.path.exists("krishna_avatar.jpeg"):
+        st.image("krishna_avatar.jpeg", width=80)
 with col2:
     st.markdown('<h1 style="margin-top: 10px;">🕉️ Gita GPT</h1>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center;">Divine guidance from the Bhagavad Gita 📜</p>', unsafe_allow_html=True)
@@ -73,22 +86,25 @@ def generate_response(user_input):
 if st.button("🕊️ Ask Krishna"):
     if user_input.strip():
         with st.spinner("Fetching Krishna's divine wisdom..."):
-            reply = generate_response(user_input)
-            translated_reply = translate_text(reply, language)
-
-            st.session_state.chat_history.append({
-                "user": user_input,
-                "bot": translated_reply
-            })
-
-            st.markdown("### 🧘 Krishna says:")
-            st.success(translated_reply)
-
             try:
-                audio_path = text_to_speech(translated_reply, language_codes[language])
-                st.audio(audio_path, format="audio/mp3")
-            except:
-                st.warning("Could not generate Krishna's voice.")
+                reply = generate_response(user_input)
+                translated_reply = translate_text(reply, language)
+
+                st.session_state.chat_history.append({
+                    "user": user_input,
+                    "bot": translated_reply
+                })
+
+                st.markdown("### 🧘 Krishna says:")
+                st.success(translated_reply)
+
+                try:
+                    audio_path = text_to_speech(translated_reply, language_codes[language])
+                    st.audio(audio_path, format="audio/mp3")
+                except Exception as e:
+                    st.warning("Could not generate Krishna's voice.")
+            except Exception as e:
+                st.error("Something went wrong. Please try again.")
     else:
         st.warning("Please enter a question.")
 
