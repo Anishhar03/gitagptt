@@ -1,9 +1,8 @@
-import PyPDF2
+import fitz  # PyMuPDF
 
 def load_gita_text(pdf_path):
-    with open(pdf_path, 'rb') as f:
-        reader = PyPDF2.PdfReader(f)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text()
-    return text
+    doc = fitz.open(pdf_path)
+    full_text = []
+    for page in doc:
+        full_text.append(page.get_text())
+    return "\n".join(full_text)

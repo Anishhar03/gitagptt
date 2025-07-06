@@ -1,0 +1,14 @@
+echo "
+__pycache__/
+*.pyc
+.env
+venv/
+*.db
+*.sqlite3
+*.log
+.DS_Store
+.idea/
+*.pkl
+*.mp3
+converted.wav
+" > .gitignore

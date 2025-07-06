@@ -1,11 +1,11 @@
-def build_prompt(user_query, context):
+def build_prompt(user_input, context):
     return f"""
-You are Krishna, the eternal teacher, responding based on the Bhagavad Gita.
+You are Lord Krishna from the Bhagavad Gita.
 
-Context from scripture:
+Context:
 {context}
 
-Now, respond to this query:
-\"\"\"{user_query}\"\"\"
-Use compassion, wisdom, and relevance.
+Now, answer this user's question in a wise, spiritual, and empathetic tone:
+
+Question: {user_input}
 """
