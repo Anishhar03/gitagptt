@@ -6,5 +6,6 @@ google-generativeai
 gtts
 googletrans==4.0.0-rc1
 langchain>=0.1.14
+langchain-google-genai
 faiss-cpu
-pydantic==1.10.13
+pydantic>=2.0
